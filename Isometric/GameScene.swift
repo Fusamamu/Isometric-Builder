@@ -2,30 +2,11 @@ import SpriteKit
 
 class GameScene: SKScene{
     
-    var Garbage_Trunk: SKSpriteNode!
+    
     var car: Vehicle!
     
     
-    let offset_x: CGFloat = 205
-    let offset_y: CGFloat = 350
-    
-    var row: Int    = 5
-    var column: Int = 5
-    
-    var tile_width          : CGFloat = 64
-    var tile_half_width     : CGFloat { return tile_width/2  }
-    var tile_height         : CGFloat = 32
-    var tile_half_height    : CGFloat { return tile_height/2 }
-    
-    
-    var map = Array(repeating: Array(repeating: 1, count: 6), count: 6)
-    
-    var sknode_map = Array(repeating: Array(repeating: SKSpriteNode(), count: 6), count: 6)
-    
-    enum tile_type :Int {
-        case house = 0
-        case road = 1
-    }
+    var tile_engine: Tile_Engine!
     
     
     
@@ -33,20 +14,25 @@ class GameScene: SKScene{
         
         car = Vehicle(gamescene: self)
         
-        map[1][0] = 0
-        map[0][4] = 0
-        map[5][5] = 0
-        map[3][2] = 0
+        tile_engine = Tile_Engine(gamescene: self)
+        tile_engine.set_entire_MAP_ID(to: 0)
         
-        build_tile_map(map_ID: map, on_Layer: 0, zPos: -1)
+            tile_engine.set_MAP_ID(at: 3, 3, to: 2)
+            tile_engine.set_MAP_ID(at: 2, 2, to: 1)
+            tile_engine.set_MAP_ID(at: 4, 2, to: 1)
         
-        //map[3][2] = 1
+        tile_engine.build_tile_map(on_Layer: 0)
         
-        //build_tile_map(map_ID: map, on_Layer: 1, zPos: -2)
+            tile_engine.set_entire_MAP_ID(to: 2)
+            tile_engine.set_MAP_ID(at: 2, 2, to: 1)
+            tile_engine.set_MAP_ID(at: 3, 2, to: 1)
+            tile_engine.set_MAP_ID(at: 4, 2, to: 1)
         
-        // get_tile_at(row: 2, column: 2).position = CGPoint(x: frame.midX, y: frame.midY)
+        tile_engine.build_tile_map(on_Layer: 1)
         
         
+        
+ 
     
     }
     
@@ -62,114 +48,119 @@ class GameScene: SKScene{
     }
     
     override func update(_ currentTime: TimeInterval) {
-       // sorting_z_position(of: car.car)
-        sorting_z_position(of: car.car, to_objects_in: sknode_map)
+       
+        
+        tile_engine.sorting_z_position(of: car.car,in: tile_engine.MAP_LAYERS[0] as! [[SKSpriteNode]])
     }
     
-    func build_tile_map(map_ID: [[Int]], on_Layer: Int, zPos: Double?){
+    
+}
+
+
+
+class Tile_Engine{
+    
+    var gamescene: GameScene!
+    
+    let offset_x: CGFloat = 205
+    let offset_y: CGFloat = 350
+    
+    var row   : Int    = 5
+    var column: Int    = 5
+    
+    var tile_width          : CGFloat = 64
+    var tile_half_width     : CGFloat { return tile_width/2  }
+    var tile_height         : CGFloat = 32
+    var tile_half_height    : CGFloat { return tile_height/2 }
+    
+    var MAP_LAYERS: [Any] = []      //Map_layers -> Container for all Map_objects in different layers//
+    var MAP_ID: [[Int]]!            //Map_ID     -> Define ID/tile_type in the map
+    //var MAP_OBJECTS: [[SKSpriteNode]]!
+    //var MAP_ID      = Array(repeating: Array(repeating: 1, count: 6), count: 6)
+    //var MAP_OBJECTS = Array(repeating: Array(repeating: SKSpriteNode(), count: 6), count: 6)
+    
+    enum tile_type :Int {
+        case floor = 0
+        case house = 1
+        case blank = 2
+        
+    }
+    
+    init(gamescene: GameScene) {
+        self.gamescene = gamescene
+        self.set_entire_MAP_ID(to: 0)
+    }
+    
+    func build_tile_map(on_Layer: Int) {
+        
+        var map_objs = Array(repeating: Array(repeating: SKSpriteNode(), count: row + 1),
+                                  count: column + 1)
         
         for row in 0...5 {
             for column in 0...5 {
                 
                 let tile = SKSpriteNode()
                 
-                let _id = map_ID[row][column]
-                
-                if let id = tile_type(rawValue: _id){
+                if let id = tile_type(rawValue: self.MAP_ID[row][column]){
+                    
                     switch id {
-                    case .house:
-                        tile.texture = SKTexture(imageNamed: "a")
-                    case .road:
-                        tile.texture = SKTexture(imageNamed: "b")
+                        case .floor :   tile.texture = SKTexture(imageNamed: "b")
+                        case .house :   tile.texture = SKTexture(imageNamed: "a")
+                        case .blank :   tile.texture = SKTexture(imageNamed: "a")
+                                        tile.isHidden = true
                     }
                     
                     tile.name = "\(id)"
+                    print(tile.name!)
                 }
-                
-                
                 
                 tile.size   = tile.texture!.size()
                 tile_width  = tile.size.width
                 tile_height = tile.size.height/2
                 set_scale(of: tile, 0.5)
                 
-                tile.position.x =   tile_half_width  *  (CGFloat(column - row))   + offset_x
-                tile.position.y =   tile_half_height * -(CGFloat(column + row))   + offset_y
-                tile.position.y +=  tile_height * CGFloat(on_Layer)
+                tile.anchorPoint  =   CGPoint(x: 0.5, y: 0.25)
+                tile.position.x   =   tile_half_width  *  (CGFloat(column - row))   + offset_x
+                tile.position.y   =   tile_half_height * -(CGFloat(column + row))   + offset_y
+                tile.position.y  +=   tile_height * CGFloat(on_Layer)
+                
+                //Define initial Z Positions in TILE MAP//
                 
                 
-                print(tile.name!)
-                
-                if zPos == nil || map[row][column] == 0 {
-                    
+                if MAP_ID[row][column] == 0 {
+                    //if MAP_ID is FLOOR set z position to draw first
+                    tile.zPosition = -1
+                }else{
                     let z_pos = row + column
                     tile.zPosition = CGFloat(z_pos + on_Layer)
-                    
-                    
-                }else{
-                    
-                    tile.zPosition = CGFloat(zPos!)
-                    
                 }
+
+                map_objs[row][column] = tile
                 
-                tile.anchorPoint = CGPoint(x: 0.5, y: 0.25)
-                
-                
-                sknode_map[row][column] = tile
-                addChild(tile)
+                gamescene.addChild(tile)
             }
         }
+        
+       MAP_LAYERS.append(map_objs)
+        
+        
     }
     
-    func sorting_z_position(of object: SKSpriteNode){
+    
+    
+    func sorting_z_position(of object: SKSpriteNode,in map: [[SKSpriteNode]]){
         
-                var map_objs: [SKSpriteNode] = []
-        
-                for i in 0...row {
-                    map_objs.append(get_tile_at(row: i, column: 0))
-                }
-        
-                //map_objs.append(get_tile_at(row: 0, column: 0))
-        
-//                if object.position.y > map_objs[0].position.y {
-//                    object.zPosition = map_objs[0].zPosition - 0.5
-//                }else if object.position.y < map_objs[0].position.y
-//                    && object.position.y > map_objs[1].position.y {
-//                    object.zPosition = map_objs[1].zPosition - 0.5
-//                }else if object.position.y < map_objs[1].position.y
-//                    && object.position.y > map_objs[2].position.y{
-//                    object.zPosition = map_objs[2].zPosition - 0.5
-//                }else if object.position.y < map_objs[2].position.y
-//                    && object.position.y > map_objs[3].position.y{
-//                    object.zPosition = map_objs[3].zPosition - 0.5
-//                }else if object.position.y < map_objs[3].position.y
-//                    && object.position.y > map_objs[4].position.y{
-//                    object.zPosition = map_objs[4].zPosition - 0.5
-//                }else if object.position.y < map_objs[4].position.y
-//                    && object.position.y > map_objs[5].position.y{
-//                    object.zPosition = map_objs[5].zPosition - 0.5
-//                }else if object.position.y < map_objs[5].position.y
-//                    {
-//                    object.zPosition = map_objs[5].zPosition + 0.5
+//        var temp_objects: [SKSpriteNode] = []
+//
+//        for row in 0...5 {
+//            for column in 0...5 {
+//                if map[row][column].name == "house"{
+//                    temp_objects.append(MAP_OBJECTS[row][column])
 //                }
+//            }
+//        }
         
-        
-    }
-    
-    
-    func sorting_z_position(of object: SKSpriteNode, to_objects_in map: [[SKSpriteNode]]){
-        
-        var temp_objects: [SKSpriteNode] = []
-        
-        for row in 0...5 {
-            for column in 0...5 {
-                if map[row][column].name == "house"{
-                temp_objects.append(sknode_map[row][column])
-                }
-            }
-        }
-        
-        print(temp_objects.count)
+//        print(temp_objects.count)
         
         //create level of Y position start from the top of tile map//
         
@@ -177,7 +168,7 @@ class GameScene: SKScene{
         //let top_refference = CGFloat(382)
         let level_height   = tile_height/2
         print(top_refference)
-       
+        
         let level_1 = top_refference - level_height
         let level_2 = level_1 - level_height
         let level_3 = level_2 - level_height
@@ -221,7 +212,27 @@ class GameScene: SKScene{
             object.zPosition = 12.5
         }
         
-        print(level_height)
+        
+        
+    }
+    
+    func set_entire_MAP_ID(to id: Int){
+        if MAP_ID == nil{
+            MAP_ID = Array(repeating: Array(repeating: id, count: 6), count: 6)
+        }else{
+            for row in 0...row{
+                for column in 0...column{
+                    MAP_ID[row][column] = id
+                }
+            }
+        }
+    }
+    
+    func set_MAP_ID(at row:Int, _ column:Int, to id:Int){
+        MAP_ID[row][column] = id
+    }
+    
+    func update_MAP_ID() {
         
     }
     
@@ -230,7 +241,9 @@ class GameScene: SKScene{
     }
     
     func get_tile_at(row: Int, column: Int) -> SKSpriteNode {
-        return sknode_map[row][column]
+        //return MAP_OBJECTS[row][column]
+        let temp_map_object = MAP_LAYERS[0] as! [[SKSpriteNode]]
+        return temp_map_object[row][column]
     }
     
     func set_scale(of tile : SKSpriteNode, _ scale: CGFloat) {
@@ -238,4 +251,8 @@ class GameScene: SKScene{
         tile_height *= scale
         tile.setScale(scale)
     }
+    
+    
+    
+    
 }
