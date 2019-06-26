@@ -1,6 +1,7 @@
 import SpriteKit
 import Foundation
 
+
 class Vehicle {
     
     var gamescene: GameScene!
@@ -12,6 +13,7 @@ class Vehicle {
         case SE
         case SW
     }
+    
     
     var car_direction = direction.SE
     
@@ -27,14 +29,18 @@ class Vehicle {
         car = SKSpriteNode(imageNamed: "garbage_SW")
         car.position = CGPoint(x: self.gamescene.frame.midX, y: self.gamescene.frame.midY)
         
-        car.zPosition = 10
+        car.zPosition = 1
+        car.anchorPoint = CGPoint(x: 0.5, y: 0.25)
         
         self.gamescene.addChild(car)
         
-        let sin30 = sin(35.0 * Double.pi / 180)
-        let cos30 = sin(35.0 * Double.pi / 180)
+
         
-        let duration = 0.008
+        let sin30 = 0.5000000000
+        let cos30 = 0.8660254037
+        
+        
+        let duration = 0.02
         move_NE = SKAction.repeatForever(SKAction.move(by: CGVector(dx: cos30, dy: sin30), duration: duration))
         move_NW = SKAction.repeatForever(SKAction.move(by: CGVector(dx: -cos30, dy: sin30), duration: duration))
         move_SE = SKAction.repeatForever(SKAction.move(by: CGVector(dx: cos30, dy: -sin30), duration: duration))
