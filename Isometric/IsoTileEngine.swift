@@ -18,10 +18,7 @@ class ISO_Tile_Engine{
     
     var MAP_LAYERS: [Any] = []      //Map_layers -> Container for all Map_objects in different layers//
     var MAP_ID: [[Int]]!            //Map_ID     -> Define ID/tile_type in the map
-    //var MAP_OBJECTS: [[SKSpriteNode]]!
-    //var MAP_ID      = Array(repeating: Array(repeating: 1, count: 6), count: 6)
-    //var MAP_OBJECTS = Array(repeating: Array(repeating: SKSpriteNode(), count: 6), count: 6)
-    
+
     enum tile_type :Int {
         case floor = 0
         case house = 1
@@ -34,11 +31,9 @@ class ISO_Tile_Engine{
         self.set_entire_MAP_ID(to: 0)
     }
     
-    
     func build_tile_map(on_Layer: Int) {
         
-        var map_objs = Array(repeating: Array(repeating: SKSpriteNode(), count: row + 1),
-                             count: column + 1)
+        var map_objs = Array(repeating: Array(repeating: SKSpriteNode(), count: row + 1), count: column + 1)
         
         for row in 0...5 {
             for column in 0...5 {
@@ -64,25 +59,11 @@ class ISO_Tile_Engine{
                 set_scale(of: tile, 0.5)
                 
                 tile.anchorPoint  =   CGPoint(x: 0.5, y: 0.25)
-                
-                
                 tile.position.x = get_CARTESIAN_POS(from: row, column).x + offset_x
                 tile.position.y = get_CARTESIAN_POS(from: row, column).y + offset_y
-                
-                
-                // ALTERNATIVE FUNCTIONS
-                //                tile.position.x = get_CARTESIAN_POS(from: CGPoint(x: row, y: column)).x
-                //                tile.position.y = get_CARTESIAN_POS(from: CGPoint(x: row, y: column)).y
-                //                tile.position.x   =   tile_half_width  *  (CGFloat(column - row))   + offset_x
-                //                tile.position.y   =   tile_half_height * -(CGFloat(column + row))   + offset_y
-                
                 tile.position.y  +=   tile_height * CGFloat(on_Layer)
                 
-                //Define initial Z Positions in TILE MAP//
-                
-                
                 if MAP_ID[row][column] == 0 {
-                    //if MAP_ID is FLOOR set z position to draw first
                     tile.zPosition = -1
                 }else{
                     let z_pos = row + column
@@ -90,36 +71,16 @@ class ISO_Tile_Engine{
                 }
                 
                 map_objs[row][column] = tile
-                
                 gamescene.addChild(tile)
             }
         }
         
         MAP_LAYERS.append(map_objs)
-        
-        
     }
-    
-    
-    
+        
     func sorting_z_position(of object: SKSpriteNode,in map: [[SKSpriteNode]]){
         
-        //        var temp_objects: [SKSpriteNode] = []
-        //
-        //        for row in 0...5 {
-        //            for column in 0...5 {
-        //                if map[row][column].name == "house"{
-        //                    temp_objects.append(MAP_OBJECTS[row][column])
-        //                }
-        //            }
-        //        }
-        
-        //        print(temp_objects.count)
-        
-        //create level of Y position start from the top of tile map//
-        
         let top_refference = map[0][0].position.y
-        //let top_refference = CGFloat(382)
         let level_height   = tile_height/2
         print(top_refference)
         
@@ -165,9 +126,6 @@ class ISO_Tile_Engine{
         }else if object.position.y < level_12   {
             object.zPosition = 12.5
         }
-        
-        
-        
     }
     
     func set_entire_MAP_ID(to id: Int){
@@ -206,13 +164,7 @@ class ISO_Tile_Engine{
         tile.setScale(scale)
     }
     
-    //Cartesian to isometric:
-    
-    //    tile.position.x   =   tile_half_width  *  (CGFloat(column - row))   + offset_x
-    //    tile.position.y   =   tile_half_height * -(CGFloat(column + row))   + offset_y
-    
     func get_CARTESIAN_POS (from ISO_point: CGPoint) -> CGPoint{
-        
         var temp_pos = CGPoint.zero
         
         temp_pos.x = tile_half_width  *  CGFloat(ISO_point.y - ISO_point.x)
@@ -222,35 +174,21 @@ class ISO_Tile_Engine{
     }
     
     func get_CARTESIAN_POS(from row: Int, _ column: Int) -> CGPoint {
-        
         var temp_pos = CGPoint.zero
         
         temp_pos.x =  tile_half_width  *  (CGFloat(column - row))
         temp_pos.y =  tile_half_height * -(CGFloat(column + row))
         
         return temp_pos
-        
     }
-    
-    //Isometric to Cartesian:
-    
+
     func get_ISO_POS (from Cartesian_point: CGPoint) -> CGPoint{
-        
         var temp_pos = CGPoint.zero
-        
-        //        Cartesian_point.x = tile_half_width  *  CGFloat(temp_pos.y - temp_pos.x)
-        //        Cartesian_point.y = tile_half_height * -CGFloat(temp_pos.y + temp_pos.x)
-        //
-        //        CGFloat(temp_pos.y) = Cartesian_point.x/tile_half_width + CGFloat(temp_pos.x)
-        //
-        //        -(Cartesian_point.y/tile_half_height) - CGFloat(temp_pos.x) = CGFloat(temp_pos.y)
-        //        -(Cartesian_point.y/tile_half_height) - CGFloat(temp_pos.y) = CGFloat(temp_pos.x)
         
         temp_pos.x = -(Cartesian_point.y/tile_half_height + Cartesian_point.x/tile_half_width)/2
         temp_pos.y =  (Cartesian_point.x/tile_half_width  - Cartesian_point.y/tile_half_height)/2
         
         return temp_pos
     }
-    
-    
+
 }

@@ -1,7 +1,6 @@
 import SpriteKit
 import Foundation
 
-
 class Vehicle {
     
     var gamescene: GameScene!
@@ -13,7 +12,6 @@ class Vehicle {
         case SE
         case SW
     }
-    
     
     var car_direction = direction.SE
     
@@ -34,12 +32,9 @@ class Vehicle {
         
         self.gamescene.addChild(car)
         
-
-        
         let sin30 = 0.5000000000
         let cos30 = 0.8660254037
-        
-        
+
         let duration = 0.02
         move_NE = SKAction.repeatForever(SKAction.move(by: CGVector(dx: cos30, dy: sin30), duration: duration))
         move_NW = SKAction.repeatForever(SKAction.move(by: CGVector(dx: -cos30, dy: sin30), duration: duration))
@@ -47,10 +42,8 @@ class Vehicle {
         move_SW = SKAction.repeatForever(SKAction.move(by: CGVector(dx: -cos30, dy: -sin30), duration: duration))
         
         car.run(move_SE)
-        
     }
-    
-    
+
     func update_touch(location: CGPoint){
         
         if gamescene.contains(location)
